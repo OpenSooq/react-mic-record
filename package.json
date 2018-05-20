@@ -1,0 +1,47 @@
+{
+  "name": "react-mic-record",
+  "version": "1.0.0",
+  "description": "Record audio from your microphone",
+  "main": "lib/index.js",
+  "jsnext:main": "es/index.js",
+  "module": "es/index.js",
+  "files": [
+    "css",
+    "es",
+    "lib",
+    "umd"
+  ],
+  "keywords": [
+    "react",
+    "react-component",
+    "microphone",
+    "MediaRecorder",
+    "volume meter"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OpenSooq/react-mic-record"
+  },
+  "scripts": {
+    "build": "nwb build-react-component",
+    "clean": "nwb clean-module && npm clean-demo",
+    "start": "nwb serve-react-demo",
+    "deploy": "nwb build-react-component",
+    "lint": "eslint -c .eslintrc.json src/ demo/",
+    "lintfix": "eslint -c .eslintrc.json --fix src/ demo/"
+  },
+  "peerDependencies": {
+    "react": "15.x"
+  },
+  "devDependencies": {
+    "eslint": "^4.12.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": ">=3.0.0",
+    "nwb": "^0.15.6",
+    "nwb-sass": "^0.6.0",
+    "react": "^15.4.x",
+    "react-dom": "^15.4.x"
+  },
+  "author": "Amr Alshroof",
+  "license": "MIT"
+}

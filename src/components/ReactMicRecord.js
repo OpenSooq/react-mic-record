@@ -1,0 +1,103 @@
+import React, { Component }   from 'react';
+import { MicrophoneRecorder } from '../libs/MicrophoneRecorder';
+import AudioContext           from '../libs/AudioContext';
+import AudioPlayer            from '../libs/AudioPlayer';
+import Visualizer             from '../libs/Visualizer';
+
+
+export default class ReactMicRecord extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      analyser            : null,
+      microphoneRecorder  : null,
+      canvas              : null,
+      canvasCtx           : null
+    }
+  }
+
+  componentDidMount() {
+    const { onStop, onStart, onData, audioElem, audioBitsPerSecond, mimeType } = this.props;
+    const { visualizer } = this.refs;
+    const canvas = visualizer;
+    const canvasCtx = canvas.getContext("2d");
+    const options = {
+      audioBitsPerSecond : audioBitsPerSecond,
+      mimeType           : mimeType
+    }
+
+    if(audioElem) {
+      const analyser = AudioContext.getAnalyser();
+
+      AudioPlayer.create(audioElem);
+
+      this.setState({
+        analyser            : analyser,
+        canvas              : canvas,
+        canvasCtx           : canvasCtx
+      }, () => {
+        this.visualize();
+      });
+    } else {
+      const analyser = AudioContext.getAnalyser();
+
+      this.setState({
+        analyser            : analyser,
+        microphoneRecorder  : new MicrophoneRecorder(onStart, onStop, onData, options),
+        canvas              : canvas,
+        canvasCtx           : canvasCtx
+      }, () => {
+        this.visualize();
+      });
+    }
+
+  }
+
+  visualize() {
+    const self = this;
+    const { backgroundColor, strokeColor, width, height, visualSetting } = this.props;
+    const { canvas, canvasCtx, analyser } = this.state;
+
+    if(visualSetting === 'sinewave') {
+      Visualizer.visualizeSineWave(analyser, canvasCtx, canvas, width, height, backgroundColor, strokeColor);
+
+    } else if(visualSetting === 'frequencyBars') {
+      Visualizer.visualizeFrequencyBars(analyser, canvasCtx, canvas, width, height, backgroundColor, strokeColor);
+    } 
+  }
+
+  clear() {
+    const { canvasCtx, width, height } = this.state;
+    canvasCtx.clearRect(0, 0, width, height);
+  }
+
+  render() {
+    const { record, onStop, width, height } = this.props;
+    const { analyser,  microphoneRecorder, canvasCtx } = this.state;
+
+    if(record) {
+      if(microphoneRecorder) {
+        microphoneRecorder.startRecording();
+      }
+    } else {
+      if (microphoneRecorder) {
+        microphoneRecorder.stopRecording(onStop);
+        this.clear();
+      }
+    }
+
+    return (<canvas ref="visualizer" height={height} width={width} className={this.props.className}></canvas>);
+  }
+}
+
+ReactMicRecord.defaultProps = {
+  backgroundColor   : 'rgba(255, 255, 255, 0.5)',
+  strokeColor       : '#000000',
+  className         : 'visualizer',
+  audioBitsPerSecond: 128000,
+  mimeType          : 'audio/webm;codecs=opus',
+  record            : false,
+  width             : 640,
+  height            : 100,
+  visualSetting     : 'sinewave'
+}

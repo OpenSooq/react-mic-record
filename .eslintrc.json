@@ -1,0 +1,39 @@
+{
+    "env": {
+        "node": true,
+        "es6": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 2017,
+        "sourceType": "module",
+        "ecmaFeatures": {
+            "experimentalObjectRestSpread": true
+        }
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:promise/recommended"
+    ],
+    "plugins": [
+        "promise"
+    ],
+    "rules": {
+        "camelcase": ["off"],
+        "no-console": ["off"],
+        "indent": ["warn"],
+        "no-unused-vars":["warn"],
+        "no-extra-semi":["warn"],
+        "linebreak-style": [
+            "error",
+            "unix"
+        ],
+        "quotes": [
+            "warn",
+            "single"
+        ],
+        "semi": [
+            "error",
+            "always"
+        ]
+    }
+}
