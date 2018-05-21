@@ -18,8 +18,7 @@ export default class ReactMicRecord extends Component {
 
   componentDidMount() {
     const { onStop, onStart, onData, audioElem, audioBitsPerSecond, mimeType } = this.props;
-    const { visualizer } = this.refs;
-    const canvas = visualizer;
+    const canvas = this.visualizer;
     const canvasCtx = canvas.getContext("2d");
     const options = {
       audioBitsPerSecond : audioBitsPerSecond,
@@ -86,7 +85,7 @@ export default class ReactMicRecord extends Component {
       }
     }
 
-    return (<canvas ref="visualizer" height={height} width={width} className={this.props.className}></canvas>);
+    return (<canvas ref={(c)=>this.visualizer = c} height={height} width={width} className={this.props.className}></canvas>);
   }
 }
 
