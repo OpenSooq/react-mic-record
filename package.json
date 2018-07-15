@@ -31,7 +31,7 @@
     "lintfix": "eslint -c .eslintrc.json --fix src/ demo/"
   },
   "peerDependencies": {
-    "react": "15.x"
+    "react": "^16.2.0"
   },
   "devDependencies": {
     "eslint": "^4.12.1",
@@ -39,8 +39,8 @@
     "eslint-plugin-standard": ">=3.0.0",
     "nwb": "^0.15.6",
     "nwb-sass": "^0.6.0",
-    "react": "^15.4.x",
-    "react-dom": "^15.4.x"
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0"
   },
   "author": "Amr Alshroof",
   "license": "MIT"
