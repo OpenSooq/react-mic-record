@@ -65,6 +65,14 @@ export default class ReactMicRecord extends Component {
         
     }
     
+    componentWillUnmount() {
+        const {microphoneRecorder} = this.state;
+        if (microphoneRecorder) {
+            microphoneRecorder.stopRecording();
+            this.clear();
+        }
+    }
+    
     visualize() {
         const {backgroundColor, strokeColor, width, height, visualSetting} = this.props;
         const {canvas, canvasCtx, analyser} = this.state;
@@ -83,7 +91,7 @@ export default class ReactMicRecord extends Component {
     }
     
     render() {
-        const {record, onStop, width, height, className} = this.props;
+        const {record, width, height, className} = this.props;
         const {microphoneRecorder} = this.state;
         
         if (record) {
@@ -92,7 +100,7 @@ export default class ReactMicRecord extends Component {
             }
         } else {
             if (microphoneRecorder) {
-                microphoneRecorder.stopRecording(onStop);
+                microphoneRecorder.stopRecording();
                 this.clear();
             }
         }
