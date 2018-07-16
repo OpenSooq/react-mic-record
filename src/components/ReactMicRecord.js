@@ -1,11 +1,15 @@
-import React, {Component} from 'react';
+import React from 'react';
 import MicrophoneRecorder from '../libs/MicrophoneRecorder';
 import AudioContext from '../libs/AudioContext';
 import AudioPlayer from '../libs/AudioPlayer';
 import Visualizer from '../libs/Visualizer';
 
+function isBrowserSupported() {
+    return window.AudioContext || window.webkitAudioContext;
+}
 
-export default class ReactMicRecord extends Component {
+
+export default class ReactMicRecord extends React.Component {
     
     static defaultProps = {
         backgroundColor: 'rgba(255, 255, 255, 0.5)',
@@ -21,67 +25,52 @@ export default class ReactMicRecord extends Component {
     
     constructor(props) {
         super(props);
+        this.audioContext = null;
+        this.microphoneRecorder = null;
         this.state = {
-            analyser: null,
-            microphoneRecorder: null,
             canvas: null,
             canvasCtx: null
         }
     }
     
     componentDidMount() {
+        if (!isBrowserSupported()) {
+            return;
+        }
         const {onStop, onStart, onData, audioElem, audioBitsPerSecond, mimeType} = this.props;
-        const canvas = this.visualizer;
+        const canvas = this.visualizerRef;
         const canvasCtx = canvas.getContext("2d");
-        const options = {
-            audioBitsPerSecond: audioBitsPerSecond,
-            mimeType: mimeType
-        };
+        const options = {audioBitsPerSecond, mimeType};
+        
+        this.audioContext = new AudioContext();
         
         if (audioElem) {
-            const analyser = AudioContext.getAnalyser();
-            
-            AudioPlayer.create(audioElem);
-            
-            this.setState({
-                analyser,
-                canvas,
-                canvasCtx
-            }, () => {
-                this.visualize();
-            });
+            this.audioPlayer = new AudioPlayer(audioElem, this.audioContext);
         } else {
-            const analyser = AudioContext.getAnalyser();
-            
-            this.setState({
-                analyser,
-                microphoneRecorder: new MicrophoneRecorder(onStart, onStop, onData, options),
-                canvas,
-                canvasCtx
-            }, () => {
-                this.visualize();
-            });
+            this.microphoneRecorder = new MicrophoneRecorder(onStart, onStop, onData, options, this.audioContext);
         }
         
+        this.setState({canvas, canvasCtx}, () => this.visualize());
     }
     
     componentWillUnmount() {
-        const {microphoneRecorder} = this.state;
-        if (microphoneRecorder) {
-            microphoneRecorder.stopRecording();
+        if (this.microphoneRecorder) {
+            this.microphoneRecorder.unMount();
             this.clear();
         }
     }
     
     visualize() {
         const {backgroundColor, strokeColor, width, height, visualSetting} = this.props;
-        const {canvas, canvasCtx, analyser} = this.state;
+        const {canvas, canvasCtx} = this.state;
+        
+        this.visualizer = new Visualizer(this.audioContext, canvasCtx, canvas, width, height, backgroundColor, strokeColor);
         
         if (visualSetting === 'sinewave') {
-            Visualizer.visualizeSineWave(analyser, canvasCtx, canvas, width, height, backgroundColor, strokeColor);
+            this.visualizer.visualizeSineWave();
             
         } else if (visualSetting === 'frequencyBars') {
-            Visualizer.visualizeFrequencyBars(analyser, canvasCtx, canvas, width, height, backgroundColor, strokeColor);
+            this.visualizer.visualizeFrequencyBars();
         }
     }
     
@@ -91,20 +80,24 @@ export default class ReactMicRecord extends Component {
     }
     
     render() {
+        if (!isBrowserSupported()) {
+            console.log('Browser not supported');
+            return null;
+        }
         const {record, width, height, className} = this.props;
-        const {microphoneRecorder} = this.state;
         
         if (record) {
-            if (microphoneRecorder) {
-                microphoneRecorder.startRecording();
+            if (this.microphoneRecorder) {
+                this.microphoneRecorder.startRecording();
+                this.visualize();
             }
         } else {
-            if (microphoneRecorder) {
-                microphoneRecorder.stopRecording();
+            if (this.microphoneRecorder) {
+                this.microphoneRecorder.stopRecording();
                 this.clear();
             }
         }
         
-        return <canvas ref={c => this.visualizer = c} height={height} width={width} className={className}/>;
+        return <canvas ref={c => this.visualizerRef = c} height={height} width={width} className={className}/>;
     }
 }

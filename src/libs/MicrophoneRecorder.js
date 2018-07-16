@@ -1,44 +1,44 @@
-import AudioContext from './AudioContext';
-
-let onDataCallback, onStopCallback, onStartCallback, blobObject, mediaOptions, stream, analyser, audioCtx,
-    mediaRecorder, startTime, chunks = [];
-
 const constraints = {audio: true, video: false}; // constraints - only audio needed
 
 export default class MicrophoneRecorder {
-    constructor(onStart, onStop, onData, options) {
+    constructor(onStart, onStop, onData, options, audioContext) {
         
         navigator.getUserMedia = (navigator.getUserMedia ||
             navigator.webkitGetUserMedia ||
             navigator.mozGetUserMedia ||
             navigator.msGetUserMedia);
         
-        onStartCallback = onStart;
-        onStopCallback = onStop;
-        mediaOptions = options;
-        onDataCallback = onData;
+        this.audioCtx = audioContext.getAudioContext();
+        this.analyser = audioContext.getAnalyser();
+        this.stream = null;
+        this.onStartCb = onStart;
+        this.onStopCb = onStop;
+        this.mediaOptions = options;
+        this.onData = onData;
+        this.chunks = [];
+        this.startTime = null;
     }
     
     startRecording() {
-        startTime = Date.now();
+        this.startTime = Date.now();
         
-        if (mediaRecorder) {
+        if (this.mediaRecorder) {
             
-            if (audioCtx && audioCtx.state === 'suspended') {
-                audioCtx.resume();
+            if (this.audioCtx && this.audioCtx.state === 'suspended') {
+                this.audioCtx.resume();
             }
             
-            if (mediaRecorder && mediaRecorder.state === 'paused') {
-                mediaRecorder.resume();
+            if (this.mediaRecorder && this.mediaRecorder.state === 'paused') {
+                this.mediaRecorder.resume();
                 return;
             }
             
-            if (audioCtx && mediaRecorder && mediaRecorder.state === 'inactive') {
-                mediaRecorder.start(10);
-                const source = audioCtx.createMediaStreamSource(stream);
-                source.connect(analyser);
-                if (onStartCallback) {
-                    onStartCallback();
+            if (this.audioCtx && this.mediaRecorder && this.mediaRecorder.state === 'inactive') {
+                this.mediaRecorder.start(10);
+                const source = this.audioCtx.createMediaStreamSource(this.stream);
+                source.connect(this.analyser);
+                if (this.onStartCb) {
+                    this.onStartCb();
                 }
             }
         } else {
@@ -46,35 +46,30 @@ export default class MicrophoneRecorder {
                 console.log('getUserMedia supported.');
                 navigator.mediaDevices.getUserMedia(constraints).then(str => {
                     
-                    stream = str;
-                    console.log('stream',stream)
+                    this.stream = str;
                     
-                    if (MediaRecorder.isTypeSupported(mediaOptions.mimeType)) {
-                        mediaRecorder = new MediaRecorder(str, mediaOptions);
+                    if (MediaRecorder.isTypeSupported(this.mediaOptions.mimeType)) {
+                        this.mediaRecorder = new MediaRecorder(this.stream, this.mediaOptions);
                     } else {
-                        mediaRecorder = new MediaRecorder(str);
+                        this.mediaRecorder = new MediaRecorder(this.stream);
                     }
                     
-                    if (onStartCallback) {
-                        onStartCallback();
+                    if (this.onStartCb) {
+                        this.onStartCb();
                     }
                     
-                    
-                    mediaRecorder.onstop = () => this.onStop();
-                    mediaRecorder.ondataavailable = e => {
-                        chunks.push(e.data);
-                        if (onDataCallback) {
-                            onDataCallback(e.data);
+                    this.mediaRecorder.onstop = () => this.onStop();
+                    this.mediaRecorder.ondataavailable = e => {
+                        this.chunks.push(e.data);
+                        if (this.onData) {
+                            this.onData(e.data);
                         }
                     };
                     
-                    audioCtx = AudioContext.getAudioContext();
-                    analyser = AudioContext.getAnalyser();
+                    this.mediaRecorder.start(10);
                     
-                    mediaRecorder.start(10);
-                    
-                    const source = audioCtx.createMediaStreamSource(stream);
-                    source.connect(analyser);
+                    const source = this.audioCtx.createMediaStreamSource(this.stream);
+                    source.connect(this.analyser);
                     
                 });
             } else {
@@ -85,28 +80,31 @@ export default class MicrophoneRecorder {
     }
     
     stopRecording() {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-            mediaRecorder.stop();
-            stream.getTracks()[0].stop();
-            mediaRecorder = null;
-            audioCtx.suspend();
+        if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+            this.mediaRecorder.stop();
+            this.audioCtx.suspend();
         }
     }
     
+    unMount() {
+        this.stream && this.stream.getTracks()[0].stop();
+        this.mediaRecorder = null;
+    }
+    
     onStop() {
-        const blob = new Blob(chunks, {'type': mediaOptions.mimeType});
-        chunks = [];
+        const blob = new Blob(this.chunks, {'type': this.mediaOptions.mimeType});
+        this.chunks = [];
         
         const blobObject = {
             blob,
-            startTime,
+            startTime: this.startTime,
             stopTime: Date.now(),
-            options: mediaOptions,
+            options: this.mediaOptions,
             blobURL: window.URL.createObjectURL(blob)
         };
         
-        if (onStopCallback) {
-            onStopCallback(blobObject);
+        if (this.onStopCb) {
+            this.onStopCb(blobObject);
         }
         
     }

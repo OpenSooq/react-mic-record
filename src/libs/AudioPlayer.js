@@ -1,22 +1,11 @@
-import AudioContext from './AudioContext';
-
-let audioSource;
-
-const AudioPlayer = {
-
-    create(audioElem) {
-        const audioCtx = AudioContext.getAudioContext();
-        const analyser = AudioContext.getAnalyser();
-
-        if (audioSource === undefined) {
-            const source = audioCtx.createMediaElementSource(audioElem);
-            source.connect(analyser);
-            audioSource = source;
-        }
-
+export default class AudioPlayer {
+    constructor(audioElem, audioContext) {
+        const audioCtx = audioContext.getAudioContext();
+        const analyser = audioContext.getAnalyser();
+        
+        this.audioSource = audioCtx.createMediaElementSource(audioElem);
+        this.audioSource.connect(analyser);
         analyser.connect(audioCtx.destination);
-    },
-
-};
-
-export default AudioPlayer;
+    }
+    
+}

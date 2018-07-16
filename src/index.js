@@ -1,3 +1,3 @@
 import ReactMicRecord from './components/ReactMicRecord';
 
-export {ReactMicRecord};
+export default ReactMicRecord;

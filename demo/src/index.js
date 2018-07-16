@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {render} from 'react-dom';
-import {ReactMicRecord, saveRecording} from '../../src';
+import ReactMicRecord from '../../src';
 
 require('./styles.scss');
 

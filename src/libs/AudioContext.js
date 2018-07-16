@@ -1,22 +1,17 @@
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-const analyser = audioCtx.createAnalyser();
-
-const AudioContext = {
-
+export default class AudioContext {
+    
+    constructor() {
+        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        this.analyser = this.audioCtx.createAnalyser();
+    }
+    
+    
     getAudioContext() {
-        return audioCtx;
-    },
-
+        return this.audioCtx;
+    }
+    
     getAnalyser() {
-        return analyser;
-    },
-
-    decodeAudioData() {
-        audioCtx.decodeAudioData(audioData).then(function(decodedData) {
-            // use the decoded data here
-        });
-    },
-
-};
-
-export default AudioContext;
+        return this.analyser;
+    }
+    
+}

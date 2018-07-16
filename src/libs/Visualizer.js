@@ -1,144 +1,102 @@
-let drawVisual;
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+    } : null;
+}
 
-const Visualizer = {
-
-    visualizeSineWave(analyser, canvasCtx, canvas, width, height, backgroundColor, strokeColor) {
-        analyser.fftSize = 2048;
-
-        const bufferLength = analyser.fftSize;
+export default class Visualizer {
+    
+    constructor(audioContext, canvasCtx, canvas, width, height, backgroundColor, strokeColor) {
+        this.analyser = audioContext.getAnalyser();
+        this.canvasCtx = canvasCtx;
+        this.canvas = canvas;
+        this.width = width;
+        this.height = height;
+        this.backgroundColor = backgroundColor;
+        this.strokeColor = strokeColor;
+        this.drawVisual = null;
+    }
+    
+    
+    visualizeSineWave() {
+        this.analyser.fftSize = 2048;
+        
+        const bufferLength = this.analyser.fftSize;
         const dataArray = new Uint8Array(bufferLength);
-
-        canvasCtx.clearRect(0, 0, width, height);
-
-        function draw() {
-            drawVisual = requestAnimationFrame(draw);
-
-            analyser.getByteTimeDomainData(dataArray);
-
-            canvasCtx.fillStyle = backgroundColor;
-            canvasCtx.fillRect(0, 0, width, height);
-
-            canvasCtx.lineWidth = 2;
-            canvasCtx.strokeStyle = strokeColor;
-
-            canvasCtx.beginPath();
-
-            const sliceWidth = width * 1.0 / bufferLength;
+        
+        this.canvasCtx.clearRect(0, 0, this.width, this.height);
+        
+        const draw = () => {
+            this.drawVisual = requestAnimationFrame(draw);
+            
+            this.analyser.getByteTimeDomainData(dataArray);
+            
+            this.canvasCtx.fillStyle = this.backgroundColor;
+            this.canvasCtx.fillRect(0, 0, this.width, this.height);
+            
+            this.canvasCtx.lineWidth = 2;
+            this.canvasCtx.strokeStyle = this.strokeColor;
+            
+            this.canvasCtx.beginPath();
+            
+            const sliceWidth = this.width * 1.0 / bufferLength;
             let x = 0;
-
+            
             for (let i = 0; i < bufferLength; i++) {
                 const v = dataArray[i] / 128.0;
-                const y = v * height/2;
-
+                const y = v * this.height / 2;
+                
                 if (i === 0) {
-                    canvasCtx.moveTo(x, y);
+                    this.canvasCtx.moveTo(x, y);
                 } else {
-                    canvasCtx.lineTo(x, y);
+                    this.canvasCtx.lineTo(x, y);
                 }
-
+                
                 x += sliceWidth;
             }
-
-            canvasCtx.lineTo(canvas.width, canvas.height/2);
-            canvasCtx.stroke();
-        }
-
+            
+            this.canvasCtx.lineTo(this.canvas.width, this.canvas.height / 2);
+            this.canvasCtx.stroke();
+        };
+        
         draw();
-    },
-
-    visualizeFrequencyBars(analyser, canvasCtx, canvas, width, height, backgroundColor, strokeColor) {
-        const self = this;
-        analyser.fftSize = 256;
-        const bufferLength = analyser.frequencyBinCount;
-        console.log(bufferLength);
+    }
+    
+    visualizeFrequencyBars() {
+        this.analyser.fftSize = 256;
+        const bufferLength = this.analyser.frequencyBinCount;
         const dataArray = new Uint8Array(bufferLength);
-
-        canvasCtx.clearRect(0, 0, width, height);
-
-        function draw() {
-            drawVisual = requestAnimationFrame(draw);
-
-            analyser.getByteFrequencyData(dataArray);
-
-            canvasCtx.fillStyle = backgroundColor;
-            canvasCtx.fillRect(0, 0, width, height);
-
-            const barWidth = (width / bufferLength) * 2.5;
+        
+        this.canvasCtx.clearRect(0, 0, this.width, this.height);
+        
+        const draw = () => {
+            this.drawVisual = requestAnimationFrame(draw);
+            
+            this.analyser.getByteFrequencyData(dataArray);
+            
+            this.canvasCtx.fillStyle = this.backgroundColor;
+            this.canvasCtx.fillRect(0, 0, this.width, this.height);
+            
+            const barWidth = (this.width / bufferLength) * 2.5;
             let barHeight;
             let x = 0;
-
+            
             for (let i = 0; i < bufferLength; i++) {
                 barHeight = dataArray[i];
-
-                const rgb = self.hexToRgb(strokeColor);
-
-                // canvasCtx.fillStyle = `rgb(${barHeight+100},${rgb.g},${rgb.b})`;
-                canvasCtx.fillStyle = strokeColor;
-                canvasCtx.fillRect(x, height-barHeight/2, barWidth, barHeight/2);
-
+                
+                const rgb = hexToRgb(this.strokeColor);
+                
+                this.canvasCtx.fillStyle = this.strokeColor;
+                this.canvasCtx.fillRect(x, this.height - barHeight / 2, barWidth, barHeight / 2);
+                
                 x += barWidth + 1;
             }
-        }
-
+        };
+        
         draw();
-    },
-
-    visualizeFrequencyCircles(analyser, canvasCtx, canvas, width, height, backgroundColor, strokeColor) {
-        const self = this;
-        analyser.fftSize = 32;
-        const bufferLength = analyser.frequencyBinCount;
-        console.log(bufferLength);
-        const dataArray = new Uint8Array(bufferLength);
-
-        canvasCtx.clearRect(0, 0, width, height);
-
-        function draw() {
-            drawVisual = requestAnimationFrame(draw);
-
-            analyser.getByteFrequencyData(dataArray);
-
-            const reductionAmount = 3;
-            const reducedDataArray = new Uint8Array(bufferLength / reductionAmount);
-            for (let i = 0; i < bufferLength; i += reductionAmount) {
-                let sum = 0;
-                for (let j = 0; j < reductionAmount; j++) {
-                    sum += dataArray[i + j];
-                }
-
-                reducedDataArray[i/reductionAmount] = sum / reductionAmount;
-            }
-
-            canvasCtx.clearRect(0, 0, width, height);
-            canvasCtx.beginPath();
-            canvasCtx.arc(width / 2, height / 2, Math.min(height, width) / 2, 0, 2 * Math.PI);
-            canvasCtx.fillStyle = backgroundColor;
-            canvasCtx.fill();
-
-
-            const stepSize = (Math.min(height, width) / 2.0) / (reducedDataArray.length);
-
-            canvasCtx.strokeStyle = strokeColor;
-            for (let i = 0; i < reducedDataArray.length; i++) {
-                canvasCtx.beginPath();
-                const normalized = reducedDataArray[i] / 128;
-                const r = (stepSize * i) + (stepSize * normalized);
-                canvasCtx.arc(width / 2, height / 2, r, 0, 2 * Math.PI);
-                canvasCtx.stroke();
-            }
-        }
-
-        draw();
-    },
-
-    hexToRgb(hex) {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-            r: parseInt(result[1], 16),
-            g: parseInt(result[2], 16),
-            b: parseInt(result[3], 16),
-        } : null;
-    },
-
-};
-
-export default Visualizer;
+    }
+    
+}
