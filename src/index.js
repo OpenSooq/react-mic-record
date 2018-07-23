@@ -6,6 +6,10 @@ export function browserSupportsAudio() {
         return false;
     }
     const tmp = new AudioContextClass();
+    if (!tmp) {
+        return false;
+    }
+    tmp.ok = true;
     return !!tmp.createAnalyser;
     
 }
