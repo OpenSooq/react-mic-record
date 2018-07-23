@@ -1,6 +1,6 @@
 {
   "name": "react-mic-record",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Record audio from your microphone",
   "main": "lib/index.js",
   "jsnext:main": "es/index.js",

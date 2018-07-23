@@ -22,18 +22,15 @@ export default class ReactMicRecord extends React.Component {
         super(props);
         this.audioContext = null;
         this.microphoneRecorder = null;
-        this.state = {
-            canvas: null,
-            canvasCtx: null
-        }
+        this.canvasRef = null;
+        this.canvasCtx = null;
     }
     
     componentDidMount() {
-
+        
         const {onStop, onStart, onData, audioElem, audioBitsPerSecond, mimeType} = this.props;
-        const canvas = this.visualizerRef;
-        const canvasCtx = canvas.getContext("2d");
         const options = {audioBitsPerSecond, mimeType};
+        this.canvasCtx = this.canvasRef.getContext("2d");
         
         this.audioContext = new AudioContext();
         
@@ -43,7 +40,7 @@ export default class ReactMicRecord extends React.Component {
             this.microphoneRecorder = new MicrophoneRecorder(onStart, onStop, onData, options, this.audioContext);
         }
         
-        this.setState({canvas, canvasCtx}, () => this.visualize());
+        this.visualize();
     }
     
     componentWillUnmount() {
@@ -55,9 +52,8 @@ export default class ReactMicRecord extends React.Component {
     
     visualize() {
         const {backgroundColor, strokeColor, width, height, visualSetting} = this.props;
-        const {canvas, canvasCtx} = this.state;
         
-        this.visualizer = new Visualizer(this.audioContext, canvasCtx, canvas, width, height, backgroundColor, strokeColor);
+        this.visualizer = new Visualizer(this.audioContext, this.canvasCtx, this.canvasRef, width, height, backgroundColor, strokeColor);
         
         if (visualSetting === 'sinewave') {
             this.visualizer.visualizeSineWave();
@@ -68,8 +64,8 @@ export default class ReactMicRecord extends React.Component {
     }
     
     clear() {
-        const {canvasCtx, width, height} = this.state;
-        canvasCtx.clearRect(0, 0, width, height);
+        const {width, height} = this.props;
+        this.canvasCtx && this.canvasCtx.clearRect(0, 0, width, height);
     }
     
     render() {
@@ -87,6 +83,6 @@ export default class ReactMicRecord extends React.Component {
             }
         }
         
-        return <canvas ref={c => this.visualizerRef = c} height={height} width={width} className={className}/>;
+        return <canvas ref={c => this.canvasRef = c} height={height} width={width} className={className}/>;
     }
 }
