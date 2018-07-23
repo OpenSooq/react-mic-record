@@ -4,11 +4,6 @@ import AudioContext from '../libs/AudioContext';
 import AudioPlayer from '../libs/AudioPlayer';
 import Visualizer from '../libs/Visualizer';
 
-function isBrowserSupported() {
-    return window.AudioContext || window.webkitAudioContext;
-}
-
-
 export default class ReactMicRecord extends React.Component {
     
     static defaultProps = {
@@ -34,9 +29,7 @@ export default class ReactMicRecord extends React.Component {
     }
     
     componentDidMount() {
-        if (!isBrowserSupported()) {
-            return;
-        }
+
         const {onStop, onStart, onData, audioElem, audioBitsPerSecond, mimeType} = this.props;
         const canvas = this.visualizerRef;
         const canvasCtx = canvas.getContext("2d");
@@ -80,10 +73,6 @@ export default class ReactMicRecord extends React.Component {
     }
     
     render() {
-        if (!isBrowserSupported()) {
-            console.log('Browser not supported');
-            return null;
-        }
         const {record, width, height, className} = this.props;
         
         if (record) {
