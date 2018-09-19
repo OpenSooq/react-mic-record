@@ -1,6 +1,6 @@
 # react-mic-record #
 
-Record a user's voice and display as an osscilation.
+Record a user's voice and display as an osscilation. Audio is saved as WebM audio file format.
 
 
 Works via the HTML5 MediaRecorder API ([currently only available in Chrome & Firefox](https://caniuse.com/#search=MediaRecorder)).
