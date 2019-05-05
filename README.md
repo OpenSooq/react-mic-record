@@ -94,7 +94,7 @@ This package uses code from ([react-mic](https://github.com/hackingbeauty/react-
 
 ## License ##
 
-MIT
+Apache 2.0
 
 
 
