@@ -40,7 +40,7 @@ Check out the demo.
 ![react-mic-record Demo](gif-demo.gif)
 
 ```js
-import { ReactMicRecord } from 'react-mic-record';
+import ReactMicRecord from 'react-mic-record';
 
 export class Example extends React.Component {
   constructor(props) {
